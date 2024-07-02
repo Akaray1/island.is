@@ -3,6 +3,7 @@ import addDays from 'date-fns/addDays'
 import {
   buildAlertMessageField,
   buildAsyncSelectField,
+  buildBoxChartField,
   buildCustomField,
   buildDateField,
   buildDescriptionField,
@@ -1338,31 +1339,57 @@ export const ParentalLeaveForm: Form = buildForm({
                     }
                   },
                 }),
-                buildCustomField({
-                  id: 'giveRights.isGivingRights',
-                  childInputIds: ['giveRights.isGivingRights'],
-                  title:
-                    parentalLeaveFormMessages.shared.transferRightsGiveTitle,
-                  condition: (answers, externalData) => {
-                    const canTransferRights =
-                      getSelectedChild(answers, externalData)
-                        ?.parentalRelation === ParentalRelations.primary &&
-                      allowOtherParent(answers)
-
-                    const { hasMultipleBirths } = getApplicationAnswers(answers)
-
-                    const multipleBirthsRequestDays =
-                      getMultipleBirthRequestDays(answers)
-
-                    return (
-                      canTransferRights &&
-                      getApplicationAnswers(answers).isGivingRights === YES &&
-                      (hasMultipleBirths === NO ||
-                        multipleBirthsRequestDays === 0)
-                    )
-                  },
-                  component: 'GiveDaysSlider',
+                buildBoxChartField({
+                  id: 'boxchart',
+                  boxes: 6,
+                  calculateBoxStyle: (index) =>
+                    index < 5 ? 'blue' : 'grayWithLines',
+                  keys: [
+                    {
+                      label: () => ({
+                        ...parentalLeaveFormMessages.shared
+                          .yourRightsInMonthsAndDay,
+                        values: {
+                          months: 5,
+                          day: 150,
+                        },
+                      }),
+                      bulletStyle: 'blue',
+                    },
+                    {
+                      label: () => ({
+                        ...parentalLeaveFormMessages.shared.giveRightsDays,
+                        values: { day: 30 },
+                      }),
+                      bulletStyle: 'greenWithLines',
+                    },
+                  ],
                 }),
+                // buildCustomField({
+                //   id: 'giveRights.isGivingRights',
+                //   childInputIds: ['giveRights.isGivingRights'],
+                //   title:
+                //     parentalLeaveFormMessages.shared.transferRightsGiveTitle,
+                //   condition: (answers, externalData) => {
+                //     const canTransferRights =
+                //       getSelectedChild(answers, externalData)
+                //         ?.parentalRelation === ParentalRelations.primary &&
+                //       allowOtherParent(answers)
+
+                //     const { hasMultipleBirths } = getApplicationAnswers(answers)
+
+                //     const multipleBirthsRequestDays =
+                //       getMultipleBirthRequestDays(answers)
+
+                //     return (
+                //       canTransferRights &&
+                //       getApplicationAnswers(answers).isGivingRights === YES &&
+                //       (hasMultipleBirths === NO ||
+                //         multipleBirthsRequestDays === 0)
+                //     )
+                //   },
+                //   component: 'GiveDaysSlider',
+                // }),
               ],
             }),
           ],
