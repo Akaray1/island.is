@@ -42,6 +42,7 @@ import {
   HiddenInputWithWatchedValueField,
   HiddenInputField,
   SliderField,
+  BoxChartField,
 } from '@island.is/application/types'
 
 import { Colors } from '@island.is/island-ui/theme'
@@ -881,6 +882,24 @@ export const buildSliderField = (
     onChange,
     onChangeEnd,
     labelMultiplier,
+    condition,
+  }
+}
+
+export const buildBoxChartField = (
+  data: Omit<BoxChartField, 'type' | 'component' | 'children' | 'title'>,
+): BoxChartField => {
+  const { titleLabel, boxes, calculateBoxStyle, keys, condition } = data
+  return {
+    title: '',
+    id: '',
+    children: undefined,
+    type: FieldTypes.BOX_CHART,
+    component: FieldComponents.BOX_CHART,
+    titleLabel,
+    boxes,
+    calculateBoxStyle,
+    keys,
     condition,
   }
 }

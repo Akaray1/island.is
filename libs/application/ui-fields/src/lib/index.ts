@@ -27,3 +27,4 @@ export { TableRepeaterFormField } from './TableRepeaterFormField/TableRepeaterFo
 export { FindVehicleFormField } from './FindVehicleFormField/FindVehicleFormField'
 export { StaticTableFormField } from './StaticTableFormField/StaticTableFormField'
 export { SliderFormField } from './SliderFormField/SliderFormField'
+export { BoxChartFormField } from './BoxChartFormField/BoxChartFormField'
