@@ -36,7 +36,6 @@ import {
   useListDocumentsQuery,
 } from '../../graphql/types/schema'
 import { createNavigationOptionHooks } from '../../hooks/create-navigation-option-hooks'
-import { useActiveTabItemPress } from '../../hooks/use-active-tab-item-press'
 import { useConnectivityIndicator } from '../../hooks/use-connectivity-indicator'
 import { navigateTo } from '../../lib/deep-linking'
 import { useOrganizationsStore } from '../../stores/organizations-store'
@@ -167,13 +166,11 @@ export const InboxScreen: NavigationFunctionComponent<{
   opened?: boolean
   archived?: boolean
   bookmarked?: boolean
-  refresh?: number
 }> = ({
   componentId,
   opened = false,
   archived = false,
   bookmarked = false,
-  refresh,
 }) => {
   useNavigationOptions(componentId)
   const ui = useUiStore()
@@ -187,6 +184,7 @@ export const InboxScreen: NavigationFunctionComponent<{
   const [visible, setVisible] = useState(false)
   const [refetching, setRefetching] = useState(false)
   const pageRef = useRef(1)
+  const loadingTimeout = useRef<ReturnType<typeof setTimeout>>()
 
   const incomingFilters = useMemo(() => {
     return {
@@ -217,6 +215,7 @@ export const InboxScreen: NavigationFunctionComponent<{
         }
       },
     })
+
   const unreadCount = res?.data?.documentsV2?.unreadCount ?? 0
 
   useConnectivityIndicator({
@@ -239,19 +238,11 @@ export const InboxScreen: NavigationFunctionComponent<{
     setFilters(appliedFilters)
   }, [incomingFilters, filters])
 
-  useEffect(() => {
-    setRefetching(false)
-  }, [res.loading])
-
-  useEffect(() => {
-    res.refetch()
-  }, [refresh])
-
   const items = useMemo(() => res.data?.documentsV2?.data ?? [], [res.data])
   const isSearch = ui.inboxQuery.length > 2
 
   const loadMore = async () => {
-    if (res.loading) {
+    if (res.loading || loadingMore) {
       return
     }
 
@@ -297,13 +288,6 @@ export const InboxScreen: NavigationFunctionComponent<{
     setLoadingMore(false)
   }
 
-  useActiveTabItemPress(0, () => {
-    flatListRef.current?.scrollToOffset({
-      offset: -200,
-      animated: true,
-    })
-  })
-
   useEffect(() => {
     Navigation.mergeOptions(ComponentRegistry.InboxScreen, {
       bottomTab: {
@@ -329,6 +313,27 @@ export const InboxScreen: NavigationFunctionComponent<{
     },
     [items],
   )
+
+  const onRefresh = useCallback(() => {
+    try {
+      if (loadingTimeout.current) {
+        clearTimeout(loadingTimeout.current)
+      }
+      setRefetching(true)
+      res
+        .refetch()
+        .then(() => {
+          ;(loadingTimeout as any).current = setTimeout(() => {
+            setRefetching(false)
+          }, 1331)
+        })
+        .catch(() => {
+          setRefetching(false)
+        })
+    } catch (err) {
+      setRefetching(false)
+    }
+  }, [])
 
   const renderItem = useCallback(
     ({ item }: ListRenderItemInfo<ListItem>) => {
@@ -519,13 +524,7 @@ export const InboxScreen: NavigationFunctionComponent<{
           </>
         }
         refreshControl={
-          <RefreshControl
-            refreshing={refetching}
-            onRefresh={() => {
-              setRefetching(true)
-              res.refetch()
-            }}
-          />
+          <RefreshControl refreshing={refetching} onRefresh={onRefresh} />
         }
         onEndReached={() => {
           loadMore()
