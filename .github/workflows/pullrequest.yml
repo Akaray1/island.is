@@ -43,17 +43,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: 'package.json'
-
-      - name: Setup yarn
-        run: npm install -g yarn
-
-      - name: Check node version
-        run: |
-          node -v
-          ls -l `which node`
       - name: Checking out relevant branches
         run: |
           git checkout $GITHUB_HEAD_REF
@@ -66,36 +55,13 @@ jobs:
           HEAD_SHA=$(git merge-base HEAD $GITHUB_HEAD_REF)
           echo Current base SHA is $BASE_SHA and head SHA is $HEAD_SHA
           echo "{\"base_sha\": \"$BASE_SHA\", \"head_sha\":\"$HEAD_SHA\"}" > event.json
-
-      - name: Keep PR run event
-        uses: actions/upload-artifact@v4
-        with:
-          name: pr-event
-          path: event.json
-          retention-days: 60
-      - name: Get cache
-        id: get-cache
-        uses: ./.github/actions/get-cache
+      - name: Nx init
+        uses: ./.github/actions/nx-init
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          enable-cache: 'node_modules,cypress,generated-files'
-
-      - run: |
-          echo "HEAD=$GITHUB_SHA" >> $GITHUB_ENV
-          export HEAD_REF="$GITHUB_HEAD_REF"
-          export BASE_REF="$GITHUB_BASE_REF"
-          export PR_REF=$GITHUB_SHA
-          export SHELL=/usr/bin/bash
-          export WORKFLOW_ID=pullrequest
-          source ./scripts/ci/00_prepare-base-tags.sh $(git merge-base HEAD $GITHUB_BASE_REF)
-          git checkout $GITHUB_SHA
-          echo "BASE=$BASE" >> $GITHUB_ENV
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HTML_URL: ${{ github.event.pull_request.html_url }}
-          ISSUE_REPORTING_SLACK_WEBHOOK_URL: ${{ secrets.SLACK_BUILD_ISSUES_REPORTING_WEBHOOK_URL }}
-        name: Preparing HEAD and BASE tags
-
+          dirtybot-token: ${{ secrets.DIRTY_FIX_BOT_TOKEN }}
+      - name: Hehe
+        run: echo "Hehe" && exit 1
       - name: License audit Node modules
         run: ./scripts/ci/20_license-audit.sh
 
