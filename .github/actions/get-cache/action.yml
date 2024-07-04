@@ -35,7 +35,7 @@ runs:
         NODE_OPTIONS: --max-old-space-size=8192
       run: |
         echo $_CACHE_KEYS
-        cd scripts/ci/cache
+        cd scripts/ci/actions
         yarn install --immutable
         node cache-action.mjs
         echo $_CACHE_KEYS
