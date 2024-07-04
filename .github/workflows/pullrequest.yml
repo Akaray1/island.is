@@ -64,6 +64,8 @@ jobs:
           retention-days: 60
       - name: Nx init
         uses: ./.github/actions/nx-init
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Hehe
         run: echo "Hehe" && exit 1
       - name: License audit Node modules
